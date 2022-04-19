@@ -8,6 +8,10 @@
         {
             "matches": ["*://*.chess.com/*"],
             "js": ["content.js"]
+        },
+        {
+            "matches": ["*://*.lichess.org/analysis*"],
+            "js": ["lichess_content.js"]
         }
     ],
     "background": {

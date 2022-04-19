@@ -10,6 +10,13 @@ function openNewTab(url) {
     });
 }
 
+function openAnalysis(pgn) {
+    chrome.runtime.sendMessage({action: 'openAnalysis', pgn: pgn}, (response) => {
+        console.log(`Sending an openAnalysis request.`);
+        console.log(`Received the following response: ${JSON.stringify(response)}`);
+    });
+}
+
 function delay(ms) {
     return new Promise(resolve => {
         setTimeout(resolve, ms);
@@ -50,10 +57,11 @@ async function getPGN() {
     });
 
     const pgn = pgnStripped.join(' ');
-    console.log(pgn);
+    openAnalysis(pgn);
 }
 
 document.onreadystatechange = async function() {
-    if (document.readyState === 'complete')
+    if (document.readyState === 'complete') {
         await getPGN();
+    }
 };
