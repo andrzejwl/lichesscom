@@ -1,9 +1,5 @@
 const lichessAnalysisUrl = 'https://lichess.org/analysis';
 
-// chrome.runtime.onInstalled.addListener(() => {
-//     console.log("extension loaded");
-// });
-
 chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
     switch(req.action) {
         case 'openTab':
@@ -30,14 +26,6 @@ function handleOpenTab(url, _callback=function(newT){}) {
 }
 
 function handleOpenAnalysis(pgn) {
-    console.log(`received the following PGN: ${pgn}`);
-
-    // chrome.tabs.create({
-    //     url: lichessAnalysisUrl,
-    //     selected: true,
-    // }, (tab) => {
-    //     chrome.runtime.sendMessage(tab.id, )
-    // })
 
     var done = false; // flag variable to prevent continuous re-sending (only executed once)
 
