@@ -2,9 +2,6 @@ const lichessAnalysisUrl = 'https://lichess.org/analysis';
 
 chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
     switch(req.action) {
-        case 'openTab':
-            handleOpenTab(req.url);
-            break;
         case 'openAnalysis':
             handleOpenAnalysis(req.pgn);
             break;

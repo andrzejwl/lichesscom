@@ -20,5 +20,11 @@
     "action": {
         "default_popup": "popup.html",
         "default_icon": "icon.png"
-    }
+    },
+    "web_accessible_resources": [
+        {
+            "matches": ["*://*.chess.com/*"],
+            "resources": ["icon.png"]
+        }
+    ]
 }
