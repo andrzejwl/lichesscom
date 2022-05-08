@@ -4,7 +4,10 @@ const pgnAttrName = 'pgn';
 const closeBtnClassName = 'icon-font-chess x ui_outside-close-icon';
 const btnsContainerClassName = 'daily-game-footer-button-group';
 const btnGenericClassName = 'icon-font-chess';
-const iconFileName = 'icon.png';
+const iconFileName = 'lichess_icon.png';
+const liveBtnsContainerClassName = 'live-game-buttons-button-group';
+const liveDownloadBtnClassName = 'icon-font-chess download live-game-buttons-button';
+
 
 function openAnalysis(pgn) {
     chrome.runtime.sendMessage({action: 'openAnalysis', pgn: pgn});
@@ -16,18 +19,20 @@ function delay(ms) {
     });
 }
 
-async function getPGN() {
+async function getPGN(live) {
+    const downloadCname = (live) ? liveDownloadBtnClassName : downloadBtnClassName;
+
     // open the Download Game popup
-    var btn = document.getElementsByClassName(downloadBtnClassName);
+    var btn = document.getElementsByClassName(downloadCname);
 
     while (btn.length === 0) {
-        btn = document.getElementsByClassName(downloadBtnClassName);
+        btn = document.getElementsByClassName(downloadCname);
         await delay(1000);
     }
 
     btn[0].click();
 
-    // find the div containing the PGN
+    // find the div containing the PGN (the PGN div is the same for both live and archived games)
     var div = document.getElementsByClassName(pgnDivClassName);
 
     while (div.length === 0) {
@@ -62,7 +67,7 @@ function getIcon() {
     return icon;
 }
 
-function getExtensionBtn() {
+function getExtensionBtn(live) {
     const btn = document.createElement('button');
 
     btn.className = btnGenericClassName;
@@ -72,7 +77,7 @@ function getExtensionBtn() {
     btn.style.border = 'none';
     btn.style.margin = '10px';
 
-    btn.onclick = () => {getPGN()};
+    btn.onclick = () => {getPGN(live)};
 
     const icon = getIcon();
     btn.appendChild(icon);
@@ -80,16 +85,41 @@ function getExtensionBtn() {
     return btn;
 }
 
-async function insertExtensionBtn() {
-    var btnContainer = document.getElementsByClassName('daily-game-footer-button-group');
+async function getBtnContainer() {
+    var btnContainer = document.getElementsByClassName(btnsContainerClassName);
+    var live = false;
 
     while (btnContainer.length === 0) {
         await delay(1000);
-        btnContainer = document.getElementsByClassName('daily-game-footer-button-group');
+        btnContainer = document.getElementsByClassName(btnsContainerClassName);
+        if (btnContainer.length > 0) {
+            break;
+        }
+
+        // check if there is a live game in the DOM
+        btnContainer = document.getElementsByClassName(liveBtnsContainerClassName);
+        if (btnContainer.length > 0) {
+            live = true;
+        }
     }
 
-    const btn = getExtensionBtn();
-    btnContainer[0].appendChild(btn);
+    return btnContainer[0];
+}
+
+async function insertExtensionBtn() {
+    var btnContainer = await getBtnContainer();
+
+    var live = false;
+
+    while (btnContainer.childElementCount !== 4) {
+        console.log('waiting', btnContainer.childElementCount, btnContainer);
+        live = true;
+        await delay(1000);
+        btnContainer = await getBtnContainer();
+    }
+
+    const btn = getExtensionBtn(live);
+    btnContainer.appendChild(btn);
 }
 
 document.onreadystatechange = async function() {
