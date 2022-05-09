@@ -7,13 +7,15 @@ const btnGenericClassName = 'icon-font-chess';
 const iconFileName = 'lichess_icon.png';
 const liveBtnsContainerClassName = 'live-game-buttons-button-group';
 const liveDownloadBtnClassName = 'icon-font-chess download live-game-buttons-button';
+const extensionBtnId = 'extension-trigger-btn';
+const refreshDelayInterval = 1000;
 
 
 function openAnalysis(pgn) {
     chrome.runtime.sendMessage({action: 'openAnalysis', pgn: pgn});
 }
 
-function delay(ms) {
+function delay(ms=refreshDelayInterval) {
     return new Promise(resolve => {
         setTimeout(resolve, ms);
     });
@@ -27,7 +29,7 @@ async function getPGN(live) {
 
     while (btn.length === 0) {
         btn = document.getElementsByClassName(downloadCname);
-        await delay(1000);
+        await delay(refreshDelayInterval);
     }
 
     btn[0].click();
@@ -70,6 +72,7 @@ function getIcon() {
 function getExtensionBtn(live) {
     const btn = document.createElement('button');
 
+    btn.id = extensionBtnId;
     btn.className = btnGenericClassName;
     btn.title = 'Import game to LiChess.org';
     btn.style.backgroundColor = 'transparent';
@@ -90,7 +93,7 @@ async function getBtnContainer() {
     var live = false;
 
     while (btnContainer.length === 0) {
-        await delay(1000);
+        await delay();
         btnContainer = document.getElementsByClassName(btnsContainerClassName);
         if (btnContainer.length > 0) {
             break;
@@ -112,14 +115,42 @@ async function insertExtensionBtn() {
     var live = false;
 
     while (btnContainer.childElementCount !== 4) {
-        console.log('waiting', btnContainer.childElementCount, btnContainer);
         live = true;
-        await delay(1000);
+        await delay();
         btnContainer = await getBtnContainer();
     }
 
-    const btn = getExtensionBtn(live);
+    var btn = getExtensionBtn(live);
     btnContainer.appendChild(btn);
+
+    var gameLive = false;
+
+    // keep checking whether a new game was started
+    while (true) {
+        await delay();
+        btnContainer = await getBtnContainer();
+        console.log('loop', gameLive, btnContainer.childElementCount);
+
+        if (!gameLive  && btnContainer.childElementCount < 4) {
+            // game has started but the extension button is still visible
+            gameLive = true;
+            btn.style.visibility = 'hidden';
+        }
+
+        // the website will remove the button inserted by the extension
+        // it may need to be reappended to the DOM
+
+        if (gameLive && btnContainer.childElementCount >= 4) {
+            // game has ended but the extension button is invisible
+            gameLive = false;
+            if (btnContainer.childElementCount === 4) {
+                btn = getExtensionBtn(live);
+                btnContainer.appendChild(btn);
+            } else {
+                btn.style.visibility = 'visible';
+            }
+        }
+    }
 }
 
 document.onreadystatechange = async function() {
