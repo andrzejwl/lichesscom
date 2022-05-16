@@ -19,7 +19,6 @@ function handleOpenTab(url, _callback=function(newT){}) {
     }, (newTab) => {
         _callback(newTab);
     });
-
 }
 
 function handleOpenAnalysis(pgn) {

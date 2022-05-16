@@ -129,7 +129,6 @@ async function insertExtensionBtn() {
     while (true) {
         await delay();
         btnContainer = await getBtnContainer();
-        console.log('loop', gameLive, btnContainer.childElementCount);
 
         if (!gameLive  && btnContainer.childElementCount < 4) {
             // game has started but the extension button is still visible
